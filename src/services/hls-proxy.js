@@ -4,13 +4,12 @@ const { PROBE } = require('../config/constants');
 const log = require('../utils/logger').hls;
 let ffprobePath = 'ffprobe';
 
-// We rely on 'ffprobe' being in the PATH (Docker/Linux or System install)
-// Static binaries are handled by the caller (server.js) if necessary
-// But default to 'ffprobe' string
+// Prefer the npm-bundled ffprobe-static binary on every platform, since a bare
+// 'ffprobe' is not guaranteed to be on PATH (e.g. a fresh Linux box with no
+// system ffmpeg package installed). Fall back to the bare command only if the
+// optional ffprobe-static dependency isn't available at all.
 try {
-    if (process.platform === 'win32') {
-        ffprobePath = require('ffprobe-static').path;
-    }
+    ffprobePath = require('ffprobe-static').path;
 } catch { /* ignore optional ffprobe-static */ }
 
 const { getCachedProbe, setCachedProbe } = require('./cache-service');
@@ -60,7 +59,11 @@ async function getStreamDetails(url) {
             const proc = spawn(ffprobePath, args);
             let stdout = '';
             proc.stdout.on('data', (d) => stdout += d);
-            const exitCode = await new Promise(r => proc.on('close', r));
+            const exitCode = await new Promise((resolve) => {
+                const timer = setTimeout(() => { proc.kill('SIGKILL'); resolve(null); }, 8000);
+                proc.on('error', () => { clearTimeout(timer); resolve(null); });
+                proc.on('close', (code) => { clearTimeout(timer); resolve(code); });
+            });
             if (exitCode === 0 && stdout.trim()) duration = parseFloat(stdout.trim());
         } catch (e) {
             log.warn({ err: e.message }, 'Failed to get duration via ffprobe');
