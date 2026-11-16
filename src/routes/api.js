@@ -42,7 +42,7 @@ router.post('/validate-config', async (req, res) => {
 
     const checks = {
         debrid: { ok: false, message: 'Debrid API key required' },
-        scraper: { ok: false, message: 'Stream source URL required' }
+        scraper: { ok: true, message: 'Using built-in scrapers (Torrentio, Comet, MediaFusion)' }
     };
 
     if (debridKey) {

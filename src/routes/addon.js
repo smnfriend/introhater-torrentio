@@ -188,8 +188,8 @@ async function handleStreamRequest(type, id, config, baseUrl, userAgent = '', or
                 name: "IntroHater",
                 title: "⚠️ No streams found",
                 description: externalScraper
-                    ? "No streams returned. Verify your AIOStreams manifest URL and reinstall from the configure page."
-                    : "Configure AIOstreams in the External Scraper field for reliable results.",
+                    ? "No streams returned. Verify your custom scraper manifest URL and reinstall from the configure page."
+                    : "No streams found on Torrentio, Comet or MediaFusion for this title.",
                 url: `${finalBaseUrl}/error/no-streams`
             }]
         };

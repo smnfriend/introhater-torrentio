@@ -51,7 +51,8 @@
                         IntroHater adds intro skip on top of your existing Stremio setup.
                     </p>
                     <p class="page-hero-note">
-                        You need Stremio, a debrid account, and AIOstreams configured before this page.
+                        You need Stremio and a debrid account. Streams are fetched automatically from
+                        Torrentio (Comet and MediaFusion as fallback) — no extra addon required.
                     </p>
                     <button type="button" id="openGuideBtn" class="btn btn-guide mt-16">
                         📖 Setup Guide
@@ -62,7 +63,7 @@
                         <div class="callout callout-info mb-16">
                             <strong>Prerequisites:</strong>
                             Stremio installed · Debrid account ·
-                            <a href="https://aiostreams.elfhosted.com/stremio/configure" target="_blank" class="text-link">AIOstreams configured</a>
+                            Torrentio is used automatically, nothing else to configure
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="provider">Primary Debrid Provider</label>
@@ -96,42 +97,41 @@
                             ➕ Add Secondary Provider
                         </button>
                         <p class="text-sm mt-8 text-center text-dim">
-                            Use this if your AIOstreams is configured with multiple debrid services (e.g., TorBox +
-                            Real-Debrid)
+                            Use this if you have more than one debrid service (e.g., TorBox +
+                            Real-Debrid) and want Torrentio to try both.
                         </p>
                         <details class="form-section mb-16">
-                            <summary>What is AIOstreams? (read this if you're stuck)</summary>
+                            <summary>How does this find streams? (read this if you're curious)</summary>
                             <div class="form-section-body">
                                 <p>
-                                    <strong>AIOstreams</strong> is a separate Stremio addon that finds torrent streams through your debrid service.
-                                    IntroHater does <em>not</em> search for torrents itself — it reuses the streams AIOstreams already finds, then adds intro/credits skip on top.
+                                    By default IntroHater queries <strong>Torrentio</strong> directly with your debrid key,
+                                    falling back to <strong>Comet</strong> and <strong>MediaFusion</strong> if Torrentio has
+                                    nothing. Nothing else needs to be installed or configured — just enter your debrid API key below.
                                 </p>
                                 <p>
-                                    <strong>What to do:</strong> Open <a href="https://aiostreams.elfhosted.com/stremio/configure" target="_blank" class="text-link">AIOstreams</a>,
-                                    connect your debrid account, pick a scraper (Comet recommended), install it to Stremio, then copy the manifest URL it gives you and paste it below.
+                                    If you'd rather use a different scraper (AIOstreams, Comet, your own), enter its
+                                    manifest URL in the optional field below and it will be used instead.
                                 </p>
                             </div>
                         </details>
                         <div class="form-group mb-16 mt-24">
-                            <label class="form-label" for="externalScraper">Stream Source — AIOstreams URL (Required)</label>
+                            <label class="form-label" for="externalScraper">Custom Stream Source (Optional)</label>
                             <input type="text" id="externalScraper" class="form-input"
-                                placeholder="https://aiostreams.../manifest.json" required>
+                                placeholder="Leave blank to use Torrentio automatically">
                             <div class="form-hint mt-8">
-                                <strong>Step 1:</strong> Configure <a
-                                    href="https://aiostreams.elfhosted.com/stremio/configure" target="_blank"
-                                    class="text-link">AIOstreams</a> with your debrid + scraper (Comet recommended).<br>
-                                <strong>Step 2:</strong> Copy the AIOstreams manifest URL and paste it above.<br>
+                                Leave this blank to use the built-in Torrentio (with Comet/MediaFusion fallback).
+                                Only fill it in if you want to use a specific scraper addon such as AIOstreams instead.<br>
                                 <div class="callout callout-blue mt-10">
-                                    <strong>Multi-Provider:</strong> If AIOstreams uses multiple debrid
+                                    <strong>Multi-Provider:</strong> If your custom scraper uses multiple debrid
                                     services, add each provider above. IntroHater picks the right key per stream.
                                 </div>
                             </div>
                         </div>
                         <details id="advancedSection" class="form-section mb-16">
-                            <summary>Advanced — self-hosted AIOStreams / StremThru proxy</summary>
+                            <summary>Advanced — self-hosted scraper / StremThru proxy</summary>
                             <div class="form-section-body">
                                 <p>
-                                    Only needed if you self-host AIOStreams and route streams through StremThru or a similar proxy.
+                                    Only needed if you self-host a scraper and route streams through StremThru or a similar proxy.
                                 </p>
                                 <div class="form-group mb-16">
                                     <label class="form-label" for="proxyUrl">Proxy URL</label>
@@ -329,7 +329,7 @@
                     const el = document.getElementById('validation-checklist');
                     const items = [
                         { key: 'debrid', label: 'Debrid API key' },
-                        { key: 'scraper', label: 'Stream source (AIOstreams)' }
+                        { key: 'scraper', label: 'Stream source' }
                     ];
                     el.innerHTML = items.map(({ key, label }) => {
                         const check = checks[key];
@@ -373,9 +373,9 @@
                     const secondaryProviders = getSecondaryProviders();
                     const generateBtn = document.getElementById('generateBtn');
                     const resultSection = document.getElementById('result-section');
-                    if (!key || !scraper) {
+                    if (!key) {
                         if (typeof Toast !== 'undefined') {
-                            Toast.warning('Debrid API key and AIOstreams URL are required.');
+                            Toast.warning('Debrid API key is required.');
                         }
                         return;
                     }
@@ -488,23 +488,22 @@
                 <div class="carousel">
                     <div class="carousel-track" id="carouselTrack">
                         <div class="carousel-slide">
-                            <img src="CopyAioStreamsURL.png" alt="Step 1: Copy AIOstreams URL">
+                            <img src="CopyAioStreamsURL.png" alt="Step 1: Get your debrid API key">
                             <div class="carousel-caption">
                                 <span class="step-number">1</span>
-                                <span class="step-text">Copy your AIOstreams manifest URL</span>
-                                <p class="step-hint">Configure AIOstreams with your debrid service + Scraper (Comet
-                                    currently recommended), then
-                                    copy the generated URL.</p>
+                                <span class="step-text">Get your debrid API key</span>
+                                <p class="step-hint">Grab the API key from your debrid provider (Real-Debrid, TorBox,
+                                    Premiumize or AllDebrid).</p>
                             </div>
                         </div>
                         <div class="carousel-slide">
                             <img src="PasteAioStreamsURLandAPIKEYtoIntroHaterConfig.png"
-                                alt="Step 2: Paste URL and API Key">
+                                alt="Step 2: Paste your API key into IntroHater">
                             <div class="carousel-caption">
                                 <span class="step-number">2</span>
-                                <span class="step-text">Paste URL & API Key into IntroHater</span>
-                                <p class="step-hint">Enter your debrid API key and paste the AIOstreams manifest URL in
-                                    the form above.</p>
+                                <span class="step-text">Paste your API key into IntroHater</span>
+                                <p class="step-hint">That's it — streams are fetched automatically from Torrentio
+                                    (with Comet/MediaFusion fallback). No other addon to configure.</p>
                             </div>
                         </div>
                         <div class="carousel-slide">
