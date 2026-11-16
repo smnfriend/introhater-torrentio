@@ -115,14 +115,14 @@ function buildStreamOutputs(s, skipSeg, clientInfo, finalBaseUrl, id, effectiveK
                 name: streamName,
                 title: description ? `${baseTitle}\n${description}` : baseTitle,
                 url: buildHlsManifestUrl(finalBaseUrl, { ...hlsParams, streamUrl }),
-                behaviorHints: s.behaviorHints || {}
+                behaviorHints: { ...(s.behaviorHints || {}), notWebReady: clientInfo.needsConstrainedPlayer }
             });
         } else if (infoHash) {
             outputs.push({
                 name: streamName,
                 title: description ? `${baseTitle}\n${description}` : baseTitle,
                 url: buildHlsManifestUrl(finalBaseUrl, { ...hlsParams, infoHash }),
-                behaviorHints: s.behaviorHints || {}
+                behaviorHints: { ...(s.behaviorHints || {}), notWebReady: clientInfo.needsConstrainedPlayer }
             });
         }
     }
